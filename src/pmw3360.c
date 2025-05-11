@@ -568,7 +568,7 @@ static enum pixart_input_mode get_input_mode_for_current_layer(const struct devi
 }
 
 static int set_cpi_if_needed(const struct device *dev, uint32_t cpi) {
-//    LOG_INF("In pwm3360_set_cpi_if_needed");
+    LOG_INF("In pwm3360_set_cpi_if_needed, %d, %d", cpi, data->curr_cpi);
     struct pixart_data *data = dev->data;
     if (cpi != data->curr_cpi) {
         return set_cpi(dev, cpi);
@@ -577,7 +577,7 @@ static int set_cpi_if_needed(const struct device *dev, uint32_t cpi) {
 }
 
 static int pmw3360_report_data(const struct device *dev) {
-//    LOG_INF("In pwm3360_report_data");
+    LOG_INF("In pwm3360_report_data");
     struct pixart_data *data = dev->data;
     uint8_t buf[PMW3360_BURST_SIZE];
 
@@ -609,6 +609,9 @@ static int pmw3360_report_data(const struct device *dev) {
     default:
         return -ENOTSUP;
     }
+
+    LOG_INF("data->curr_cpi: %d, input_mode: %d", data->curr_cpi, input_mode);
+
 
     data->curr_mode = input_mode;
 
@@ -691,6 +694,8 @@ static int pmw3360_report_data(const struct device *dev) {
 
     if (x != 0 || y != 0) {
         if (input_mode != SCROLL) {
+            LOG_INF("reporting x: %d, y: %d", x, y);
+
             input_report_rel(dev, INPUT_REL_X, x, false, K_FOREVER);
             input_report_rel(dev, INPUT_REL_Y, y, true, K_FOREVER);
         }
