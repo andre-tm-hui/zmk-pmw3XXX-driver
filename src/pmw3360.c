@@ -664,9 +664,9 @@ static int pmw3360_async_init_power_up(const struct device *dev) {
 }
 
 static int pmw3360_async_init_configure(const struct device *dev) {
-    LOG_INF("pmw3360_async_init_configure");
     int err = 0;
     const struct pixart_config *config = dev->config;
+    LOG_INF("pmw3360_async_init_configure %d", config->cpi);
 
     err = set_cpi(dev, config->cpi);
 
@@ -857,6 +857,7 @@ static const struct sensor_driver_api pmw3360_driver_api = {
         .evt_type = DT_PROP(DT_DRV_INST(n), evt_type),                                             \
         .x_input_code = DT_PROP(DT_DRV_INST(n), x_input_code),                                     \
         .y_input_code = DT_PROP(DT_DRV_INST(n), y_input_code),                                     \
+        .cpi = DT_PROP(DT_DRV_INST(n), cpi),                                                       \
     };                                                                                             \
     DEVICE_DT_INST_DEFINE(n, pmw3360_init, NULL, &data##n, &config##n, POST_KERNEL,                \
                           CONFIG_SENSOR_INIT_PRIORITY, &pmw3360_driver_api);                       \
