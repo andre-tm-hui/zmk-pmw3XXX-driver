@@ -20,6 +20,14 @@ config PMW3360_CPI
 	help
 	  Default CPI value.
 
+config PMW3360_REPORT_INTERVAL_MIN
+	int "PMW3360's default minimum report interval"
+	default 0
+	help
+	  Minimum report interval in milliseconds.
+				Set higher for bluetooth/peripheral devices.
+				Set down to 8ms for USB devices.
+
 config PMW3360_CPI_DIVIDOR
 	int "PMW3360's default CPI dividor"
 	default 4
