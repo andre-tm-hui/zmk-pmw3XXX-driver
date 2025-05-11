@@ -568,8 +568,8 @@ static enum pixart_input_mode get_input_mode_for_current_layer(const struct devi
 }
 
 static int set_cpi_if_needed(const struct device *dev, uint32_t cpi) {
-    LOG_INF("In pwm3360_set_cpi_if_needed, %d, %d", cpi, data->curr_cpi);
     struct pixart_data *data = dev->data;
+    LOG_INF("In pwm3360_set_cpi_if_needed, %d, %d", cpi, data->curr_cpi);
     if (cpi != data->curr_cpi) {
         return set_cpi(dev, cpi);
     }
