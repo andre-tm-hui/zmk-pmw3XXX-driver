@@ -607,7 +607,7 @@ static int pmw3360_report_data(const struct device *dev) {
 
 #if CONFIG_PMW3360_REPORT_INTERVAL_MIN > 0
     // strict to report inerval
-    if (now - last_rpt_time < CONFIG_PMW3610_REPORT_INTERVAL_MIN) {
+    if (now - last_rpt_time < CONFIG_PMW3360_REPORT_INTERVAL_MIN) {
         return 0;
     }
 #endif
