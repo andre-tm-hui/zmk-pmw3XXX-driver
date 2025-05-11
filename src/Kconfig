@@ -7,7 +7,6 @@
 
 menuconfig PMW3360
 	bool "PMW3360 mouse optical sensor"
-  select SPI
 	help
 	  Enable PMW3360 mouse optical sensor.
 
@@ -19,28 +18,6 @@ config PMW3360_CPI
 	range 100 12000
 	help
 	  Default CPI value.
-
-config PMW3360_CPI_DIVIDOR
-	int "PMW3360's default CPI dividor"
-	default 4
-	range 1 12
-	help
-	  Default CPI dividor value.
-
-config PMW3360_SNIPE_CPI
-    int "PMW3360's CPI in snipe mode"
-    default 200
-    range 200 3200
-    help
-      Snipe CPI value, with 200 step
-
-config PMW3360_SNIPE_CPI_DIVIDOR
-    int "PMW3360's CPI dividor in snipe mode"
-    default 1
-    range 1 100
-    help
-      Snipe CPI dividor value.
-
 
 config PMW3360_RUN_DOWNSHIFT_TIME_MS
 	int "PMW3360's default RUN mode downshift time"
