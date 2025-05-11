@@ -665,9 +665,10 @@ static int pmw3360_async_init_power_up(const struct device *dev) {
 
 static int pmw3360_async_init_configure(const struct device *dev) {
     LOG_INF("pmw3360_async_init_configure");
-    int err;
+    int err = 0;
+    const struct pixart_config *config = dev->config;
 
-    err = set_cpi(dev, dev->config->cpi);
+    err = set_cpi(dev, config->cpi);
 
     if (!err) {
         err = set_downshift_time(dev, PMW3360_REG_RUN_DOWNSHIFT,
