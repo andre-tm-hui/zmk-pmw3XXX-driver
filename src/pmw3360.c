@@ -857,7 +857,6 @@ static const struct sensor_driver_api pmw3360_driver_api = {
         .evt_type = DT_PROP(DT_DRV_INST(n), evt_type),                                             \
         .x_input_code = DT_PROP(DT_DRV_INST(n), x_input_code),                                     \
         .y_input_code = DT_PROP(DT_DRV_INST(n), y_input_code),                                     \
-        .force_awake = DT_PROP(DT_DRV_INST(n), force_awake),                                       \
     };                                                                                             \
     DEVICE_DT_INST_DEFINE(n, pmw3360_init, NULL, &data##n, &config##n, POST_KERNEL,                \
                           CONFIG_SENSOR_INIT_PRIORITY, &pmw3360_driver_api);                       \
