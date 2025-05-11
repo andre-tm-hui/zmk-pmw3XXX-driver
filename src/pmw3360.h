@@ -96,7 +96,9 @@ extern "C" {
 
 /* Position of X in motion burst data */
 #define PMW3360_DX_POS 2
+#define PMW3360_DX_H_POS 3
 #define PMW3360_DY_POS 4
+#define PMW3360_DY_H_POS 5
 
 /* Rest_En position in Config2 register. */
 #define PMW3360_REST_EN_POS 5

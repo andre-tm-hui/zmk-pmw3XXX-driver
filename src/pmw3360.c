@@ -6,10 +6,6 @@
 
 #define DT_DRV_COMPAT pixart_pmw3360
 
-// 12-bit two's complement value to int16_t
-// adapted from https://stackoverflow.com/questions/70802306/convert-a-12-bit-signed-number-in-c
-#define TOINT16(val, bits) (((struct { int16_t value : bits; }){val}).value)
-
 #include <zephyr/kernel.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/input/input.h>
@@ -564,7 +560,7 @@ static int pmw3360_report_data(const struct device *dev) {
     static int64_t dx = 0;
     static int64_t dy = 0;
 
-#if CONFIG_PMW3610_REPORT_INTERVAL_MIN > 0
+#if CONFIG_PMW3360_REPORT_INTERVAL_MIN > 0
     static int64_t last_smp_time = 0;
     static int64_t last_rpt_time = 0;
     int64_t now = k_uptime_get();
@@ -575,25 +571,29 @@ static int pmw3360_report_data(const struct device *dev) {
         return err;
     }
 
-    int16_t x = TOINT16((buf[PMW3610_X_L_POS] + ((buf[PMW3610_XY_H_POS] & 0xF0) << 4)), 12);
-    int16_t y = TOINT16((buf[PMW3610_Y_L_POS] + ((buf[PMW3610_XY_H_POS] & 0x0F) << 8)), 12);
+// 12-bit two's complement value to int16_t
+// adapted from https://stackoverflow.com/questions/70802306/convert-a-12-bit-signed-number-in-c
+#define TOINT16(val, bits) (((struct { int16_t value : bits; }){val}).value)
+
+    int16_t x = TOINT16((buf[PMW3360_DX_POS] + ((buf[PMW3360_DX_H_POS] & 0xF0) << 4)), 12);
+    int16_t y = TOINT16((buf[PMW3360_DY_POS] + ((buf[PMW3360_DY_H_POS] & 0x0F) << 8)), 12);
     LOG_DBG("x/y: %d/%d", x, y);
 
-#if IS_ENABLED(CONFIG_PMW3610_SWAP_XY)
+#if IS_ENABLED(CONFIG_PMW3360_SWAP_XY)
     int16_t a = x;
     x = y;
     y = a;
 #endif
-#if IS_ENABLED(CONFIG_PMW3610_INVERT_X)
+#if IS_ENABLED(CONFIG_PMW3360_INVERT_X)
     x = -x;
 #endif
-#if IS_ENABLED(CONFIG_PMW3610_INVERT_Y)
+#if IS_ENABLED(CONFIG_PMW3360_INVERT_Y)
     y = -y;
 #endif
 
-#if CONFIG_PMW3610_REPORT_INTERVAL_MIN > 0
+#if CONFIG_PMW3360_REPORT_INTERVAL_MIN > 0
     // purge accumulated delta, if last sampled had not been reported on last report tick
-    if (now - last_smp_time >= CONFIG_PMW3610_REPORT_INTERVAL_MIN) {
+    if (now - last_smp_time >= CONFIG_PMW3360_REPORT_INTERVAL_MIN) {
         dx = 0;
         dy = 0;
     }
@@ -604,7 +604,7 @@ static int pmw3360_report_data(const struct device *dev) {
     dx += x;
     dy += y;
 
-#if CONFIG_PMW3610_REPORT_INTERVAL_MIN > 0
+#if CONFIG_PMW3360_REPORT_INTERVAL_MIN > 0
     // strict to report inerval
     if (now - last_rpt_time < CONFIG_PMW3610_REPORT_INTERVAL_MIN) {
         return 0;
@@ -618,7 +618,7 @@ static int pmw3360_report_data(const struct device *dev) {
     bool have_y = ry != 0;
 
     if (have_x || have_y) {
-#if CONFIG_PMW3610_REPORT_INTERVAL_MIN > 0
+#if CONFIG_PMW3360_REPORT_INTERVAL_MIN > 0
     last_rpt_time = now;
 #endif
         dx = 0;
@@ -808,19 +808,19 @@ static int pmw3360_attr_set(const struct device *dev, enum sensor_channel chan,
     }
 
     switch ((uint32_t)attr) {
-        case PMW3610_ATTR_CPI:
+        case PMW3360_ATTR_CPI:
             err = set_cpi(dev, PMW3360_SVALUE_TO_CPI(*val));
             break;
 
-        case PMW3610_ATTR_RUN_DOWNSHIFT_TIME:
+        case PMW3360_ATTR_RUN_DOWNSHIFT_TIME:
             err = set_downshift_time(dev, PMW3360_REG_RUN_DOWNSHIFT, PMW3360_SVALUE_TO_TIME(*val));
             break;
 
-        case PMW3610_ATTR_REST1_DOWNSHIFT_TIME:
+        case PMW3360_ATTR_REST1_DOWNSHIFT_TIME:
             err = set_downshift_time(dev, PMW3360_REG_REST1_DOWNSHIFT, PMW3360_SVALUE_TO_TIME(*val));
             break;
 
-        case PMW3610_ATTR_REST2_DOWNSHIFT_TIME:
+        case PMW3360_ATTR_REST2_DOWNSHIFT_TIME:
             err = set_downshift_time(dev, PMW3360_REG_REST2_DOWNSHIFT, PMW3360_SVALUE_TO_TIME(*val));
             break;
 
