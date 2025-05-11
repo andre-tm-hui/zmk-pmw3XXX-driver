@@ -550,6 +550,7 @@ static void set_interrupt(const struct device *dev, const bool en) {
 static int pmw3360_report_data(const struct device *dev) {
     LOG_INF("In pwm3360_report_data");
     struct pixart_data *data = dev->data;
+    const struct pixart_config *config = dev->config;
     uint8_t buf[PMW3360_BURST_SIZE];
 
     if (unlikely(!data->ready)) {
