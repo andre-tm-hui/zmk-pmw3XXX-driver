@@ -838,21 +838,6 @@ static const struct sensor_driver_api pmw3360_driver_api = {
     .attr_set = pmw3360_attr_set,
 };
 
-#if IS_ENABLED(CONFIG_PM_DEVICE)
-
-static int pmw3360_pm_action(const struct device *dev, enum pm_device_action action) {
-    switch (action) {
-    case PM_DEVICE_ACTION_SUSPEND:
-        return set_interrupt(dev, false);
-    case PM_DEVICE_ACTION_RESUME:
-        return set_interrupt(dev, true);
-    default:
-        return -ENOTSUP;
-    }
-}
-
-#endif // IS_ENABLED(CONFIG_PM_DEVICE)
-
 #define PMW3360_DEFINE(n)                                                                          \
     static struct pixart_data data##n;                                                             \
     static const struct pixart_config config##n = {                                                \
@@ -874,7 +859,6 @@ static int pmw3360_pm_action(const struct device *dev, enum pm_device_action act
         .y_input_code = DT_PROP(DT_DRV_INST(n), y_input_code),                                     \
         .force_awake = DT_PROP(DT_DRV_INST(n), force_awake),                                       \
     };                                                                                             \
-    PM_DEVICE_DT_INST_DEFINE(n, pmw3610_pm_action);                                                \
     DEVICE_DT_INST_DEFINE(n, pmw3360_init, NULL, &data##n, &config##n, POST_KERNEL,                \
                           CONFIG_SENSOR_INIT_PRIORITY, &pmw3360_driver_api);                       \
 
