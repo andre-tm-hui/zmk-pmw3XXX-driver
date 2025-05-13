@@ -582,8 +582,8 @@ static int pmw3360_report_data(const struct device *dev) {
 // adapted from https://stackoverflow.com/questions/70802306/convert-a-12-bit-signed-number-in-c
 #define TOINT16(val, bits) (((struct { int16_t value : bits; }){val}).value)
 
-    int16_t x = TOINT16((buf[PMW3360_DX_POS] + ((buf[PMW3360_DX_H_POS] & 0xF0) << 4)), 12);
-    int16_t y = TOINT16((buf[PMW3360_DY_POS] + ((buf[PMW3360_DY_H_POS] & 0x0F) << 8)), 12);
+    // int16_t x = TOINT16((buf[PMW3360_DX_POS] + ((buf[PMW3360_DX_H_POS] & 0xF0) << 4)), 12);
+    // int16_t y = TOINT16((buf[PMW3360_DY_POS] + ((buf[PMW3360_DY_H_POS] & 0x0F) << 8)), 12);
     // Get raw 16-bit values
     // uint16_t raw_x = ((uint16_t)buf[PMW3360_DX_H_POS] << 8) | buf[PMW3360_DX_POS];
     // uint16_t raw_y = ((uint16_t)buf[PMW3360_DY_H_POS] << 8) | buf[PMW3360_DY_POS];
@@ -591,6 +591,9 @@ static int pmw3360_report_data(const struct device *dev) {
     // // Convert to signed values
     // int16_t x = (int16_t)raw_x;
     // int16_t y = (int16_t)raw_y;
+
+    int16_t x = sys_get_le16(&buf[PMW3360_DX_POS]);
+	int16_t y = sys_get_le16(&buf[PMW3360_DY_POS]);
 
     LOG_DBG("dx=%d, dy=%d", x, y);
 
