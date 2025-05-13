@@ -551,22 +551,28 @@ static int pmw3360_report_data(const struct device *dev) {
     LOG_INF("In pwm3360_report_data");
     struct pixart_data *data = dev->data;
     const struct pixart_config *config = dev->config;
-    uint8_t buf[PMW3360_BURST_SIZE];
 
     if (unlikely(!data->ready)) {
         LOG_WRN("Device is not initialized yet");
         return -EBUSY;
     }
 
-    static int64_t dx = 0;
-    static int64_t dy = 0;
-
 #if CONFIG_PMW3360_REPORT_INTERVAL_MIN > 0
-    static int64_t last_smp_time = 0;
     static int64_t last_rpt_time = 0;
     int64_t now = k_uptime_get();
+
+    // Check if enough time has passed since the last report
+    if (now - last_rpt_time < CONFIG_PMW3360_REPORT_INTERVAL_MIN) {
+        // Not enough time has passed, exit without reading sensor
+        // (which would clear the buffers)
+        return 0;
+    }
+
+    // Update last report time
+    last_rpt_time = now;
 #endif
 
+    uint8_t buf[PMW3360_BURST_SIZE];
     int err = motion_burst_read(dev, buf, sizeof(buf));
     if (err) {
         return err;
@@ -576,15 +582,15 @@ static int pmw3360_report_data(const struct device *dev) {
 // adapted from https://stackoverflow.com/questions/70802306/convert-a-12-bit-signed-number-in-c
 #define TOINT16(val, bits) (((struct { int16_t value : bits; }){val}).value)
 
-    // int16_t x = TOINT16((buf[PMW3360_DX_POS] + ((buf[PMW3360_DX_H_POS] & 0xF0) << 4)), 12);
-    // int16_t y = TOINT16((buf[PMW3360_DY_POS] + ((buf[PMW3360_DY_H_POS] & 0x0F) << 8)), 12);
+    int16_t x = TOINT16((buf[PMW3360_DX_POS] + ((buf[PMW3360_DX_H_POS] & 0xF0) << 4)), 12);
+    int16_t y = TOINT16((buf[PMW3360_DY_POS] + ((buf[PMW3360_DY_H_POS] & 0x0F) << 8)), 12);
     // Get raw 16-bit values
-    uint16_t raw_x = ((uint16_t)buf[PMW3360_DX_H_POS] << 8) | buf[PMW3360_DX_POS];
-    uint16_t raw_y = ((uint16_t)buf[PMW3360_DY_H_POS] << 8) | buf[PMW3360_DY_POS];
+    // uint16_t raw_x = ((uint16_t)buf[PMW3360_DX_H_POS] << 8) | buf[PMW3360_DX_POS];
+    // uint16_t raw_y = ((uint16_t)buf[PMW3360_DY_H_POS] << 8) | buf[PMW3360_DY_POS];
 
-    // Convert to signed values
-    int16_t x = (int16_t)raw_x;
-    int16_t y = (int16_t)raw_y;
+    // // Convert to signed values
+    // int16_t x = (int16_t)raw_x;
+    // int16_t y = (int16_t)raw_y;
 
     LOG_DBG("dx=%d, dy=%d", x, y);
 
@@ -600,38 +606,38 @@ static int pmw3360_report_data(const struct device *dev) {
     y = -y;
 #endif
 
-#if CONFIG_PMW3360_REPORT_INTERVAL_MIN > 0
-    // purge accumulated delta, if last sampled had not been reported on last report tick
-    if (now - last_smp_time >= CONFIG_PMW3360_REPORT_INTERVAL_MIN) {
-        dx = 0;
-        dy = 0;
-    }
-    last_smp_time = now;
-#endif
+// #if CONFIG_PMW3360_REPORT_INTERVAL_MIN > 0
+//     // purge accumulated delta, if last sampled had not been reported on last report tick
+//     if (now - last_smp_time >= CONFIG_PMW3360_REPORT_INTERVAL_MIN) {
+//         dx = 0;
+//         dy = 0;
+//     }
+//     last_smp_time = now;
+// #endif
 
     // accumulate delta until report in next iteration
-    dx += x;
-    dy += y;
+    // dx += x;
+    // dy += y;
 
-#if CONFIG_PMW3360_REPORT_INTERVAL_MIN > 0
-    // strict to report inerval
-    if (now - last_rpt_time < CONFIG_PMW3360_REPORT_INTERVAL_MIN) {
-        return 0;
-    }
-#endif
+// #if CONFIG_PMW3360_REPORT_INTERVAL_MIN > 0
+//     // strict to report inerval
+//     if (now - last_rpt_time < CONFIG_PMW3360_REPORT_INTERVAL_MIN) {
+//         return 0;
+//     }
+// #endif
 
      // fetch report value
-    int16_t rx = (int16_t)CLAMP(dx, INT16_MIN, INT16_MAX);
-    int16_t ry = (int16_t)CLAMP(dy, INT16_MIN, INT16_MAX);
-    bool have_x = rx != 0;
-    bool have_y = ry != 0;
+    // int16_t rx = (int16_t)CLAMP(dx, INT16_MIN, INT16_MAX);
+    // int16_t ry = (int16_t)CLAMP(dy, INT16_MIN, INT16_MAX);
+    bool have_x = x != 0;
+    bool have_y = y != 0;
 
     if (have_x || have_y) {
-#if CONFIG_PMW3360_REPORT_INTERVAL_MIN > 0
-    last_rpt_time = now;
-#endif
-        dx = 0;
-        dy = 0;
+// #if CONFIG_PMW3360_REPORT_INTERVAL_MIN > 0
+//     last_rpt_time = now;
+// #endif
+        // dx = 0;
+        // dy = 0;
         if (have_x) {
             input_report(dev, config->evt_type, config->x_input_code, rx, !have_y, K_NO_WAIT);
         }
