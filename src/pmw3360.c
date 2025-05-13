@@ -586,7 +586,7 @@ static int pmw3360_report_data(const struct device *dev) {
     int16_t x = (int16_t)raw_x;
     int16_t y = (int16_t)raw_y;
 
-    LOG_DBG("Motion: %02x, dx=%d, dy=%d", buf[PMW3360_MOTION_POS], x, y);
+    LOG_DBG("dx=%d, dy=%d", x, y);
 
 #if IS_ENABLED(CONFIG_PMW3360_SWAP_XY)
     int16_t a = x;
