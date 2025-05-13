@@ -639,10 +639,10 @@ static int pmw3360_report_data(const struct device *dev) {
         // dx = 0;
         // dy = 0;
         if (have_x) {
-            input_report(dev, config->evt_type, config->x_input_code, rx, !have_y, K_NO_WAIT);
+            input_report(dev, config->evt_type, config->x_input_code, x, !have_y, K_NO_WAIT);
         }
         if (have_y) {
-            input_report(dev, config->evt_type, config->y_input_code, ry, true, K_NO_WAIT);
+            input_report(dev, config->evt_type, config->y_input_code, y, true, K_NO_WAIT);
         }
     }
 
