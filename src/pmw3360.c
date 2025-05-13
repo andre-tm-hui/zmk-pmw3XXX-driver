@@ -567,20 +567,33 @@ static int pmw3360_report_data(const struct device *dev) {
     int64_t now = k_uptime_get();
 #endif
 
+    // Burst read data
     int err = motion_burst_read(dev, buf, sizeof(buf));
     if (err) {
         return err;
     }
 
-// 12-bit two's complement value to int16_t
-// adapted from https://stackoverflow.com/questions/70802306/convert-a-12-bit-signed-number-in-c
-#define TOINT16(val, bits) (((struct { int16_t value : bits; }){val}).value)
+    // Check if Motion register indicates data is available
+    if (!(buf[PMW3360_MOTION_POS] & PMW3360_MOTION_BITS)) {
+        // No new motion data
+        return 0;
+    }
 
-    // int16_t x = TOINT16((buf[PMW3360_DX_POS] + ((buf[PMW3360_DX_H_POS] & 0xF0) << 4)), 12);
-    // int16_t y = TOINT16((buf[PMW3360_DY_POS] + ((buf[PMW3360_DY_H_POS] & 0x0F) << 8)), 12);
-    int16_t x = (int16_t)((buf[PMW3360_DX_H_POS] << 8) | (buf[PMW3360_DX_POS]));
-    int16_t y = (int16_t)((buf[PMW3360_DY_H_POS] << 8) | (buf[PMW3360_DY_POS]));
-    LOG_DBG("x/y: %d/%d", x, y);
+    // Check for overflow condition
+    if (buf[PMW3360_MOTION_POS] & PMW3360_MOTION_OVERFLOW_MASK) {
+        LOG_WRN("Motion overflow detected - movement too fast");
+        // Optional: Special handling for overflow cases
+    }
+
+    // Get raw 16-bit values
+    uint16_t raw_x = ((uint16_t)buf[PMW3360_DX_H_POS] << 8) | buf[PMW3360_DX_POS];
+    uint16_t raw_y = ((uint16_t)buf[PMW3360_DY_H_POS] << 8) | buf[PMW3360_DY_POS];
+
+    // Convert to signed values
+    int16_t x = (int16_t)raw_x;
+    int16_t y = (int16_t)raw_y;
+
+    LOG_DBG("Motion: %02x, dx=%d, dy=%d", buf[PMW3360_MOTION_POS], x, y);
 
 #if IS_ENABLED(CONFIG_PMW3360_SWAP_XY)
     int16_t a = x;
