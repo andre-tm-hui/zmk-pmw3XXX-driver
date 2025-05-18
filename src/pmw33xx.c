@@ -744,6 +744,7 @@ static int pmw3360_sample_fetch(const struct device *dev, enum sensor_channel ch
 
 static void trigger_handler(struct k_work *work)
 {
+  LOG_INF("Trigger handler");
   sensor_trigger_handler_t handler;
   int err = 0;
   struct pmw3360_data *data = CONTAINER_OF(work, struct pmw3360_data,
@@ -766,7 +767,7 @@ static void trigger_handler(struct k_work *work)
   };
 
   handler(dev, &trig);
-
+  LOG_INF("data ready handler = %p", handler);
   key = k_spin_lock(&data->lock);
   if (data->data_ready_handler) {
     pmw3360_sample_fetch(dev, SENSOR_CHAN_ALL);
