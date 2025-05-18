@@ -954,10 +954,10 @@ static int pmw3360_trigger_set(const struct device *dev,
             const struct sensor_trigger *trig,
             sensor_trigger_handler_t handler)
 {
-  DBG_INF("setting trigger");
-  DBG_INF("trig type %d", trig->type);
-  DBG_INF("trig chan %d", trig->chan);
-  DBG_INF("handler %p", handler);
+  LOG_INF("setting trigger");
+  LOG_INF("trig type %d", trig->type);
+  LOG_INF("trig chan %d", trig->chan);
+  LOG_INF("handler %p", handler);
   struct pmw3360_data *data = dev->data;
   const struct pmw3360_config *config = dev->config;
   int err;
