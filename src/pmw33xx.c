@@ -426,7 +426,7 @@ static int burst_write(const struct device *dev, uint8_t reg, const uint8_t *buf
   return 0;
 }
 
-static int update_cpi(const struct device *dev, uint32_t cpi)
+static int update_cpi(const struct device *dev)
 {
   /* Set resolution with CPI step of 100 cpi
   * 0x00: 100 cpi (minimum cpi)
@@ -436,6 +436,8 @@ static int update_cpi(const struct device *dev, uint32_t cpi)
   * :
   * 0x77: 12000 cpi (maximum cpi)
   */
+
+  uint32_t cpi = dev->config->cpi;
 
   if ((cpi > PMW3360_MAX_CPI) || (cpi < PMW3360_MIN_CPI)) {
     LOG_ERR("CPI value %u out of range", cpi);
@@ -745,7 +747,7 @@ static int pmw3360_async_init_configure(const struct device *dev)
 {
   int err;
 
-  err = update_cpi(dev, CONFIG_PMW3360_CPI);
+  err = update_cpi(dev);
 
   if (!err) {
     err = update_downshift_time(dev,
@@ -861,6 +863,7 @@ static int pmw3360_init(const struct device *dev)
 
 static int pmw3360_sample_fetch(const struct device *dev, enum sensor_channel chan)
 {
+  LOG_DBG("Sample fetch");
   struct pmw3360_data *data = dev->data;
   const struct pmw3360_config *config = dev->config;
   uint8_t buf[PMW3360_BURST_SIZE];
@@ -987,7 +990,7 @@ static int pmw3360_attr_set(const struct device *dev, enum sensor_channel chan,
 
   switch ((uint32_t)attr) {
   case PMW3360_ATTR_CPI:
-    err = update_cpi(dev, PMW3360_SVALUE_TO_CPI(*val));
+    err = update_cpi(dev);
     break;
 
   case PMW3360_ATTR_REST_ENABLE:
@@ -1067,6 +1070,10 @@ static const struct sensor_driver_api pmw3360_driver_api = {
       },						       \
     },							       \
     .cs_gpio = SPI_CS_GPIOS_DT_SPEC_GET(DT_DRV_INST(n)),	       \
+    .evt_type = DT_PROP(DT_DRV_INST(n), evt_type),                                             \
+        .x_input_code = DT_PROP(DT_DRV_INST(n), x_input_code),                                     \
+        .y_input_code = DT_PROP(DT_DRV_INST(n), y_input_code),                                     \
+        .cpi = DT_PROP(DT_DRV_INST(n), cpi),
   };								       \
                         \
   DEVICE_DT_INST_DEFINE(n, pmw3360_init, NULL, &data##n, &config##n,     \
