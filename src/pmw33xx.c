@@ -709,9 +709,7 @@ static void irq_handler(const struct device *gpiob, struct gpio_callback *cb,
 static int pmw3360_sample_fetch(const struct device *dev, enum sensor_channel chan)
 {
   LOG_INF("Sample fetch");
-  struct pmw3360_data *data = CONTAINER_OF(cb, struct pmw3360_data,
-    irq_gpio_cb);
-  const struct device *dev = data->dev;
+  struct pmw3360_data *data = dev->data;
   const struct pmw3360_config *config = dev->config;
 
   int64_t now = k_uptime_get();
@@ -727,8 +725,6 @@ static int pmw3360_sample_fetch(const struct device *dev, enum sensor_channel ch
   data->last_rpt_time = now;
   LOG_INF("GO");
 
-  struct pmw3360_data *data = dev->data;
-  const struct pmw3360_config *config = dev->config;
   uint8_t buf[PMW3360_BURST_SIZE];
 
   if (unlikely(chan != SENSOR_CHAN_ALL)) {
