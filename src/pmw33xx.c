@@ -869,6 +869,8 @@ static int pmw3360_init_irq(const struct device *dev)
     LOG_ERR("Cannot add IRQ GPIO callback");
   }
 
+  LOG_INF("Configure irq done");
+
   return err;
 }
 
