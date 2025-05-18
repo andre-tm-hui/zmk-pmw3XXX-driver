@@ -690,28 +690,10 @@ static void irq_handler(const struct device *gpiob, struct gpio_callback *cb,
 {
   LOG_INF("IRQ handler");
   int err;
-  err = gpio_pin_interrupt_configure_dt(&config->irq_gpio,
-    GPIO_INT_DISABLE);
-
   struct pmw3360_data *data = CONTAINER_OF(cb, struct pmw3360_data,
             irq_gpio_cb);
   const struct device *dev = data->dev;
   const struct pmw3360_config *config = dev->config;
-
-  int64_t now = k_uptime_get();
-
-  // Check if enough time has passed since the last report
-  if (now - data->last_rpt_time < 200) {
-      // Not enough time has passed, exit without reading sensor
-      // (which would clear the buffers)
-      err = gpio_pin_interrupt_configure_dt(&config->irq_gpio,
-        GPIO_INT_LEVEL_ACTIVE);
-      return 0;
-  }
-
-  // Update last report time
-  data->last_rpt_time = now;
-  LOG_INF("GO");
 
   err = gpio_pin_interrupt_configure_dt(&config->irq_gpio,
                 GPIO_INT_DISABLE);
@@ -779,6 +761,19 @@ static void trigger_handler(struct k_work *work)
             trigger_handler_work);
   const struct device *dev = data->dev;
   const struct pmw3360_config *config = dev->config;
+
+  int64_t now = k_uptime_get();
+
+  // Check if enough time has passed since the last report
+  if (now - data->last_rpt_time < 200) {
+      // Not enough time has passed, exit without reading sensor
+      // (which would clear the buffers)
+      return 0;
+  }
+
+  // Update last report time
+  data->last_rpt_time = now;
+  LOG_INF("GO");
 
   k_spinlock_key_t key = k_spin_lock(&data->lock);
 
