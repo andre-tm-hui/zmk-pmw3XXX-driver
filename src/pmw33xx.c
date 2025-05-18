@@ -743,7 +743,7 @@ static int pmw3360_sample_fetch(const struct device *dev, enum sensor_channel ch
     LOG_INF("dx: %d, dy: %d", data->x, data->y);
 
     input_report(dev, config->evt_type, config->x_input_code, x, false, K_NO_WAIT);
-    input_report(dev, config->evt_type, config->y_input_code, y, false, K_NO_WAIT);
+    input_report(dev, config->evt_type, config->y_input_code, y, true, K_NO_WAIT);
   }
 
   return err;
