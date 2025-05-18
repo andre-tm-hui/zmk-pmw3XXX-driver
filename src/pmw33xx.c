@@ -718,7 +718,7 @@ static int pmw3360_sample_fetch(const struct device *dev, enum sensor_channel ch
   if (now - data->last_rpt_time < 200) {
       // Not enough time has passed, exit without reading sensor
       // (which would clear the buffers)
-      return 0;
+      return -1;
   }
 
   // Update last report time
