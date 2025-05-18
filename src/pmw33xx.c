@@ -690,6 +690,9 @@ static void irq_handler(const struct device *gpiob, struct gpio_callback *cb,
 {
   LOG_INF("IRQ handler");
   int err;
+  err = gpio_pin_interrupt_configure_dt(&config->irq_gpio,
+    GPIO_INT_DISABLE);
+
   struct pmw3360_data *data = CONTAINER_OF(cb, struct pmw3360_data,
             irq_gpio_cb);
   const struct device *dev = data->dev;
@@ -701,6 +704,8 @@ static void irq_handler(const struct device *gpiob, struct gpio_callback *cb,
   if (now - data->last_rpt_time < 200) {
       // Not enough time has passed, exit without reading sensor
       // (which would clear the buffers)
+      err = gpio_pin_interrupt_configure_dt(&config->irq_gpio,
+        GPIO_INT_LEVEL_ACTIVE);
       return 0;
   }
 
