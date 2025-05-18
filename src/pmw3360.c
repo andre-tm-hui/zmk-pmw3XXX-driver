@@ -654,7 +654,7 @@ static int pmw3360_report_data(const struct device *dev) {
 
 static void pmw3360_gpio_callback(const struct device *gpiob, struct gpio_callback *cb,
                                   uint32_t pins) {
-//    LOG_INF("In pwm3360_gpio_callback");
+    LOG_INF("In pwm3360_gpio_callback");
     struct pixart_data *data = CONTAINER_OF(cb, struct pixart_data, irq_gpio_cb);
     const struct device *dev = data->dev;
 
