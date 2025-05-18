@@ -166,6 +166,7 @@ static int pmw3360_async_init_fw_load_start(const struct device *dev);
 static int pmw3360_trigger_set(const struct device *dev,
   const struct sensor_trigger *trig,
   sensor_trigger_handler_t handler);
+static int set_interrupt(const struct device *dev, const bool en);
 
 static int (* const async_init_fn[ASYNC_INIT_STEP_COUNT])(const struct device *dev) = {
   [ASYNC_INIT_STEP_POWER_UP] = pmw3360_async_init_power_up,
@@ -842,7 +843,7 @@ static void pmw3360_async_init(struct k_work *work)
         .type = SENSOR_TRIG_DATA_READY,
         .chan = SENSOR_CHAN_ALL,
       };
-      pmw3360_trigger_set(dev, &trig, 1);
+      set_interrupt(dev, true);
     } else {
       k_work_schedule(&data->init_work,
           K_MSEC(async_init_delay[
@@ -954,10 +955,6 @@ static int pmw3360_trigger_set(const struct device *dev,
             const struct sensor_trigger *trig,
             sensor_trigger_handler_t handler)
 {
-  LOG_INF("setting trigger");
-  LOG_INF("trig type %d", trig->type);
-  LOG_INF("trig chan %d", trig->chan);
-  LOG_INF("handler %p", handler);
   struct pmw3360_data *data = dev->data;
   const struct pmw3360_config *config = dev->config;
   int err;
@@ -984,6 +981,32 @@ static int pmw3360_trigger_set(const struct device *dev,
     err = gpio_pin_interrupt_configure_dt(&config->irq_gpio,
                   GPIO_INT_DISABLE);
   }
+
+  if (!err) {
+    data->data_ready_handler = handler;
+  }
+
+  k_spin_unlock(&data->lock, key);
+
+  return err;
+}
+
+static int set_interrupt(const struct device *dev,
+  const bool en)
+{
+  struct pmw3360_data *data = dev->data;
+  const struct pmw3360_config *config = dev->config;
+  int err;
+
+  if (unlikely(!data->ready)) {
+    LOG_INF("Device is not initialized yet");
+    return -EBUSY;
+  }
+
+  k_spinlock_key_t key = k_spin_lock(&data->lock);
+
+  err = gpio_pin_interrupt_configure_dt(&config->irq_gpio,
+    en ? GPIO_INT_LEVEL_ACTIVE : GPIO_INT_DISABLE);
 
   if (!err) {
     data->data_ready_handler = handler;
