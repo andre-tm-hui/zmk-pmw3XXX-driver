@@ -726,7 +726,7 @@ static void trigger_handler(struct k_work *work)
 
   key = k_spin_lock(&data->lock);
   if (data->data_ready_handler) {
-    err = pmw3360_sample_fetch(dev, SENSOR_CHAN_ALL);
+    err = pmw3360_sample_fetch(dev);
     err = gpio_pin_interrupt_configure_dt(&config->irq_gpio,
                   GPIO_INT_LEVEL_ACTIVE);
   }
@@ -863,16 +863,12 @@ static int pmw3360_init(const struct device *dev)
   return err;
 }
 
-static int pmw3360_sample_fetch(const struct device *dev, enum sensor_channel chan)
+static int pmw3360_sample_fetch(const struct device *dev)
 {
   LOG_INF("Sample fetch");
   struct pmw3360_data *data = dev->data;
   const struct pmw3360_config *config = dev->config;
   uint8_t buf[PMW3360_BURST_SIZE];
-
-  if (unlikely(chan != SENSOR_CHAN_ALL)) {
-    return -ENOTSUP;
-  }
 
   if (unlikely(!data->ready)) {
     LOG_INF("Device is not initialized yet");
@@ -1049,7 +1045,6 @@ static int pmw3360_attr_set(const struct device *dev, enum sensor_channel chan,
 }
 
 static const struct sensor_driver_api pmw3360_driver_api = {
-  .sample_fetch = pmw3360_sample_fetch,
   .channel_get  = pmw3360_channel_get,
   .trigger_set  = pmw3360_trigger_set,
   .attr_set     = pmw3360_attr_set,
