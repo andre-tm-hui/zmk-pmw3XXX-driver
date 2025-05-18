@@ -7,28 +7,17 @@
 
 menuconfig PMW3360
 	bool "PMW3360 mouse optical sensor"
-  select SPI
 	help
 	  Enable PMW3360 mouse optical sensor.
 
 if PMW3360
 
-config PMW3360_SWAP_XY
-  bool "Swap the X/Y axis of PMW3360 sensor"
-
-config PMW3360_INVERT_X
-  bool "Invert the X axis of PMW3360 sensor"
-
-config PMW3360_INVERT_Y
-  bool "Invert the Y axis of PMW3360 sensor"
-
-config PMW3360_REPORT_INTERVAL_MIN
-	int "PMW3360's default minimum report interval"
-	default 0
+config PMW3360_CPI
+	int "PMW3360's default CPI"
+	default 1600
+	range 100 12000
 	help
-	  Minimum report interval in milliseconds.
-				Set higher for bluetooth/peripheral devices.
-				Set down to 8ms for USB devices.
+	  Default CPI value.
 
 config PMW3360_RUN_DOWNSHIFT_TIME_MS
 	int "PMW3360's default RUN mode downshift time"
@@ -53,6 +42,24 @@ config PMW3360_REST2_DOWNSHIFT_TIME_MS
 	help
 	  Default REST2 mode downshift down time in milliseconds.
 	  Time after which sensor goes from REST2 to REST3 mode.
+
+choice
+	prompt "Select PMW3360 sensor orientation"
+	default PMW3360_ORIENTATION_0
+
+config PMW3360_ORIENTATION_0
+	bool "PMW3360 not rotated"
+
+config PMW3360_ORIENTATION_90
+	bool "PMW3360 rotated 90 deg clockwise"
+
+config PMW3360_ORIENTATION_180
+	bool "PMW3360 rotated 180 deg clockwise"
+
+config PMW3360_ORIENTATION_270
+	bool "PMW3360 rotated 270 deg clockwise"
+
+endchoice
 
 module = PMW3360
 module-str = PMW3360
