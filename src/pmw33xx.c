@@ -755,6 +755,8 @@ static void trigger_handler(struct k_work *work)
 
   static int64_t last_rpt_time = 0;
   int64_t now = k_uptime_get();
+  LOG_INF("now = %lld", now);
+  LOG_INF("last_rpt_time = %lld", last_rpt_time);
 
   // Check if enough time has passed since the last report
   if (now - last_rpt_time < 20) {
