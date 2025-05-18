@@ -707,7 +707,7 @@ static void irq_handler(const struct device *gpiob, struct gpio_callback *cb,
 }
 
 static void enable_interrupt(struct k_timer *timer_id) {
-  gpio_dt_spec *irq_qpio = (gpio_dt_spec *)k_timer_user_data_get(timer_id);
+  struct gpio_dt_spec *irq_qpio = (gpio_dt_spec *)k_timer_user_data_get(timer_id);
   int err = gpio_pin_interrupt_configure_dt(&irq_gpio,
     GPIO_INT_LEVEL_ACTIVE);
 
