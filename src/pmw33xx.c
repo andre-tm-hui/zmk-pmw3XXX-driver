@@ -1074,7 +1074,7 @@ static const struct sensor_driver_api pmw3360_driver_api = {
     .evt_type = DT_PROP(DT_DRV_INST(n), evt_type),                                             \
         .x_input_code = DT_PROP(DT_DRV_INST(n), x_input_code),                                     \
         .y_input_code = DT_PROP(DT_DRV_INST(n), y_input_code),                                     \
-        .cpi = DT_PROP(DT_DRV_INST(n), cpi),
+        .cpi = DT_PROP(DT_DRV_INST(n), cpi),                                       \
   };								       \
                         \
   DEVICE_DT_INST_DEFINE(n, pmw3360_init, NULL, &data##n, &config##n,     \
