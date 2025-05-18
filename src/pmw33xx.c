@@ -861,8 +861,13 @@ static int pmw3360_init_irq(const struct device *dev)
     return err;
   }
 
-  gpio_init_callback(&data->irq_gpio_cb, irq_handler,
+  err = gpio_init_callback(&data->irq_gpio_cb, irq_handler,
         BIT(config->irq_gpio.pin));
+
+  if (err) {
+    LOG_ERR("Cannot initialize IRQ GPIO callback");
+    return err;
+  }
 
   err = gpio_add_callback(config->irq_gpio.port, &data->irq_gpio_cb);
   if (err) {
