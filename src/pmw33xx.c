@@ -163,6 +163,9 @@ static int pmw3360_async_init_configure(const struct device *dev);
 static int pmw3360_async_init_fw_load_verify(const struct device *dev);
 static int pmw3360_async_init_fw_load_continue(const struct device *dev);
 static int pmw3360_async_init_fw_load_start(const struct device *dev);
+static int pmw3360_trigger_set(const struct device *dev,
+  const struct sensor_trigger *trig,
+  sensor_trigger_handler_t handler);
 
 static int (* const async_init_fn[ASYNC_INIT_STEP_COUNT])(const struct device *dev) = {
   [ASYNC_INIT_STEP_POWER_UP] = pmw3360_async_init_power_up,
@@ -834,6 +837,7 @@ static void pmw3360_async_init(struct k_work *work)
     if (data->async_init_step == ASYNC_INIT_STEP_COUNT) {
       data->ready = true;
       LOG_INF("PMW3360 initialized");
+      pmw3360_trigger_set(dev, SENSOR_TRIG_DATA_READY, SENSOR_CHAN_ALL);
     } else {
       k_work_schedule(&data->init_work,
           K_MSEC(async_init_delay[
@@ -861,13 +865,8 @@ static int pmw3360_init_irq(const struct device *dev)
     return err;
   }
 
-  err = gpio_init_callback(&data->irq_gpio_cb, irq_handler,
+  gpio_init_callback(&data->irq_gpio_cb, irq_handler,
         BIT(config->irq_gpio.pin));
-
-  if (err) {
-    LOG_ERR("Cannot initialize IRQ GPIO callback");
-    return err;
-  }
 
   err = gpio_add_callback(config->irq_gpio.port, &data->irq_gpio_cb);
   if (err) {
