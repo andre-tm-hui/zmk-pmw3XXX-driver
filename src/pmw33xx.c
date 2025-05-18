@@ -706,6 +706,17 @@ static void irq_handler(const struct device *gpiob, struct gpio_callback *cb,
   k_work_submit(&data->trigger_handler_work);
 }
 
+static void enable_interrupt(struct k_timer *timer_id) {
+  gpio_dt_spec *irq_qpio = (gpio_dt_spec *)k_timer_user_data_get(timer_id);
+  int err = gpio_pin_interrupt_configure_dt(&irq_gpio,
+    GPIO_INT_LEVEL_ACTIVE);
+
+  if (err) {
+    LOG_ERR("Cannot enable IRQ");
+    k_panic();
+  }
+}
+
 static int pmw3360_sample_fetch(const struct device *dev, enum sensor_channel chan)
 {
   LOG_INF("Sample fetch");
@@ -724,6 +735,11 @@ static int pmw3360_sample_fetch(const struct device *dev, enum sensor_channel ch
   // Update last report time
   data->last_rpt_time = now;
   LOG_INF("last_rpt_time = %lld", data->last_rpt_time);
+
+  struct k_timer timer;
+  k_timer_init(&timer, enable_interrupt, NULL);
+  k_timer_user_data_set(&timer, &config->irq_gpio);
+  k_timer_start(&timer, K_MSEC(200), K_NO_WAIT);
 
   uint8_t buf[PMW3360_BURST_SIZE];
 
@@ -796,10 +812,6 @@ static void trigger_handler(struct k_work *work)
   // if (data->data_ready_handler) {
     err = pmw3360_sample_fetch(dev, SENSOR_CHAN_ALL);
 
-  if (!err) {
-    err = gpio_pin_interrupt_configure_dt(&config->irq_gpio,
-                  GPIO_INT_LEVEL_ACTIVE);
-    }
   // }
   k_spin_unlock(&data->lock, key);
 
