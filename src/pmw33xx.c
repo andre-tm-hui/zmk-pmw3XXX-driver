@@ -698,7 +698,7 @@ static void irq_handler(const struct device *gpiob, struct gpio_callback *cb,
   int64_t now = k_uptime_get();
 
   // Check if enough time has passed since the last report
-  if (now - data->last_rpt_time < 20) {
+  if (now - data->last_rpt_time < 200) {
       // Not enough time has passed, exit without reading sensor
       // (which would clear the buffers)
       return 0;
