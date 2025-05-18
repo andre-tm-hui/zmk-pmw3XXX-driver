@@ -796,7 +796,7 @@ static void trigger_handler(struct k_work *work)
   // if (data->data_ready_handler) {
     err = pmw3360_sample_fetch(dev, SENSOR_CHAN_ALL);
 
-  if (!err) {}
+  if (!err) {
     err = gpio_pin_interrupt_configure_dt(&config->irq_gpio,
                   GPIO_INT_LEVEL_ACTIVE);
     }
