@@ -683,6 +683,7 @@ static int pmw3360_async_init_fw_load_verify(const struct device *dev)
 static void irq_handler(const struct device *gpiob, struct gpio_callback *cb,
       uint32_t pins)
 {
+  LOG_INF("IRQ handler");
   int err;
   struct pmw3360_data *data = CONTAINER_OF(cb, struct pmw3360_data,
             irq_gpio_cb);
@@ -843,6 +844,8 @@ static void pmw3360_async_init(struct k_work *work)
 
 static int pmw3360_init_irq(const struct device *dev)
 {
+  LOG_INF("Init IRQ");
+
   int err;
   struct pmw3360_data *data = dev->data;
   const struct pmw3360_config *config = dev->config;
