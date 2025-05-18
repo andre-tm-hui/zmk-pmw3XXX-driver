@@ -842,7 +842,7 @@ static void pmw3360_async_init(struct k_work *work)
         .type = SENSOR_TRIG_DATA_READY,
         .chan = SENSOR_CHAN_ALL,
       };
-      pmw3360_trigger_set(dev, &trig, handler);
+      pmw3360_trigger_set(dev, &trig, 1);
     } else {
       k_work_schedule(&data->init_work,
           K_MSEC(async_init_delay[
