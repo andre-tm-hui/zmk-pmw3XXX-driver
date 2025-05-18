@@ -707,6 +707,19 @@ static void irq_handler(const struct device *gpiob, struct gpio_callback *cb,
 static int pmw3360_sample_fetch(const struct device *dev, enum sensor_channel chan)
 {
   LOG_INF("Sample fetch");
+  static int64_t last_rpt_time = 0;
+  int64_t now = k_uptime_get();
+
+  // Check if enough time has passed since the last report
+  if (now - last_rpt_time < 20) {
+      // Not enough time has passed, exit without reading sensor
+      // (which would clear the buffers)
+      return 0;
+  }
+
+  // Update last report time
+  last_rpt_time = now;
+
   struct pmw3360_data *data = dev->data;
   const struct pmw3360_config *config = dev->config;
   uint8_t buf[PMW3360_BURST_SIZE];
