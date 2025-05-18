@@ -838,7 +838,10 @@ static void pmw3360_async_init(struct k_work *work)
       data->ready = true;
       LOG_INF("PMW3360 initialized");
       sensor_trigger_handler_t *handler = data->data_ready_handler;
-      struct sensor_trigger trig = handler->trigger;
+      struct sensor_trigger trig = {
+        .type = SENSOR_TRIG_DATA_READY,
+        .chan = SENSOR_CHAN_ALL,
+      };
       pmw3360_trigger_set(dev, &trig, handler);
     } else {
       k_work_schedule(&data->init_work,
