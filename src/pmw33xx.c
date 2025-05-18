@@ -723,7 +723,7 @@ static int pmw3360_sample_fetch(const struct device *dev, enum sensor_channel ch
 
   // Update last report time
   data->last_rpt_time = now;
-  LOG_INF("GO");
+  LOG_INF("last_rpt_time = %lld", data->last_rpt_time);
 
   uint8_t buf[PMW3360_BURST_SIZE];
 
@@ -762,6 +762,9 @@ static int pmw3360_sample_fetch(const struct device *dev, enum sensor_channel ch
     input_report(dev, config->evt_type, config->y_input_code, y, true, K_NO_WAIT);
   }
 
+  err = gpio_pin_interrupt_configure_dt(&config->irq_gpio,
+    GPIO_INT_LEVEL_ACTIVE);
+
   return err;
 }
 
@@ -795,8 +798,6 @@ static void trigger_handler(struct k_work *work)
   key = k_spin_lock(&data->lock);
   // if (data->data_ready_handler) {
     pmw3360_sample_fetch(dev, SENSOR_CHAN_ALL);
-    err = gpio_pin_interrupt_configure_dt(&config->irq_gpio,
-                  GPIO_INT_LEVEL_ACTIVE);
   // }
   k_spin_unlock(&data->lock, key);
 
