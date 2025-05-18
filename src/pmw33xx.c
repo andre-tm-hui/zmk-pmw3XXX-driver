@@ -706,9 +706,11 @@ static void irq_handler(const struct device *gpiob, struct gpio_callback *cb,
 
   // Update last report time
   data->last_rpt_time = now;
+  LOG_INF("GO");
 
   err = gpio_pin_interrupt_configure_dt(&config->irq_gpio,
                 GPIO_INT_DISABLE);
+  LOG_INF("err = %d", err);
   if (unlikely(err)) {
     LOG_ERR("Cannot disable IRQ");
     k_panic();
