@@ -699,6 +699,49 @@ static void irq_handler(const struct device *gpiob, struct gpio_callback *cb,
   k_work_submit(&data->trigger_handler_work);
 }
 
+static int pmw3360_sample_fetch(const struct device *dev, enum sensor_channel chan)
+{
+  LOG_INF("Sample fetch");
+  struct pmw3360_data *data = dev->data;
+  const struct pmw3360_config *config = dev->config;
+  uint8_t buf[PMW3360_BURST_SIZE];
+
+  if (unlikely(chan != SENSOR_CHAN_ALL)) {
+    return -ENOTSUP;
+  }
+
+  if (unlikely(!data->ready)) {
+    LOG_INF("Device is not initialized yet");
+    return -EBUSY;
+  }
+
+  int err = motion_burst_read(dev, buf, sizeof(buf));
+
+  if (!err) {
+    int16_t x = sys_get_le16(&buf[PMW3360_DX_POS]);
+    int16_t y = sys_get_le16(&buf[PMW3360_DY_POS]);
+
+    if (IS_ENABLED(CONFIG_PMW3360_ORIENTATION_0)) {
+      data->x = -x;
+      data->y = y;
+    } else if (IS_ENABLED(CONFIG_PMW3360_ORIENTATION_90)) {
+      data->x = y;
+      data->y = x;
+    } else if (IS_ENABLED(CONFIG_PMW3360_ORIENTATION_180)) {
+      data->x = x;
+      data->y = -y;
+    } else if (IS_ENABLED(CONFIG_PMW3360_ORIENTATION_270)) {
+      data->x = -y;
+      data->y = -x;
+    }
+
+    input_report(dev, config->evt_type, config->x_input_code, x, true, K_NO_WAIT);
+    input_report(dev, config->evt_type, config->y_input_code, y, true, K_NO_WAIT);
+  }
+
+  return err;
+}
+
 static void trigger_handler(struct k_work *work)
 {
   sensor_trigger_handler_t handler;
@@ -726,7 +769,7 @@ static void trigger_handler(struct k_work *work)
 
   key = k_spin_lock(&data->lock);
   if (data->data_ready_handler) {
-    err = pmw3360_sample_fetch(dev);
+    pmw3360_sample_fetch(dev, SENSOR_CHAN_ALL);
     err = gpio_pin_interrupt_configure_dt(&config->irq_gpio,
                   GPIO_INT_LEVEL_ACTIVE);
   }
@@ -859,45 +902,6 @@ static int pmw3360_init(const struct device *dev)
 
   k_work_schedule(&data->init_work,
       K_MSEC(async_init_delay[data->async_init_step]));
-
-  return err;
-}
-
-static int pmw3360_sample_fetch(const struct device *dev)
-{
-  LOG_INF("Sample fetch");
-  struct pmw3360_data *data = dev->data;
-  const struct pmw3360_config *config = dev->config;
-  uint8_t buf[PMW3360_BURST_SIZE];
-
-  if (unlikely(!data->ready)) {
-    LOG_INF("Device is not initialized yet");
-    return -EBUSY;
-  }
-
-  int err = motion_burst_read(dev, buf, sizeof(buf));
-
-  if (!err) {
-    int16_t x = sys_get_le16(&buf[PMW3360_DX_POS]);
-    int16_t y = sys_get_le16(&buf[PMW3360_DY_POS]);
-
-    if (IS_ENABLED(CONFIG_PMW3360_ORIENTATION_0)) {
-      data->x = -x;
-      data->y = y;
-    } else if (IS_ENABLED(CONFIG_PMW3360_ORIENTATION_90)) {
-      data->x = y;
-      data->y = x;
-    } else if (IS_ENABLED(CONFIG_PMW3360_ORIENTATION_180)) {
-      data->x = x;
-      data->y = -y;
-    } else if (IS_ENABLED(CONFIG_PMW3360_ORIENTATION_270)) {
-      data->x = -y;
-      data->y = -x;
-    }
-
-    input_report(dev, config->evt_type, config->x_input_code, x, true, K_NO_WAIT);
-    input_report(dev, config->evt_type, config->y_input_code, y, true, K_NO_WAIT);
-  }
 
   return err;
 }
@@ -1045,6 +1049,7 @@ static int pmw3360_attr_set(const struct device *dev, enum sensor_channel chan,
 }
 
 static const struct sensor_driver_api pmw3360_driver_api = {
+  .sample_fetch = pmw3360_sample_fetch,
   .channel_get  = pmw3360_channel_get,
   .trigger_set  = pmw3360_trigger_set,
   .attr_set     = pmw3360_attr_set,
