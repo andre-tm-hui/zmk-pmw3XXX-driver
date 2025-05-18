@@ -130,6 +130,7 @@ struct pmw3360_data {
   struct k_spinlock            lock;
   int16_t                      x;
   int16_t                      y;
+  int64_t                      last_rpt_time;
   sensor_trigger_handler_t     data_ready_handler;
   struct k_work                trigger_handler_work;
   struct k_work_delayable      init_work;
@@ -694,6 +695,18 @@ static void irq_handler(const struct device *gpiob, struct gpio_callback *cb,
   const struct device *dev = data->dev;
   const struct pmw3360_config *config = dev->config;
 
+  int64_t now = k_uptime_get();
+
+  // Check if enough time has passed since the last report
+  if (now - data->last_rpt_time < 20) {
+      // Not enough time has passed, exit without reading sensor
+      // (which would clear the buffers)
+      return 0;
+  }
+
+  // Update last report time
+  data->last_rpt_time = now;
+
   err = gpio_pin_interrupt_configure_dt(&config->irq_gpio,
                 GPIO_INT_DISABLE);
   if (unlikely(err)) {
@@ -752,21 +765,6 @@ static int pmw3360_sample_fetch(const struct device *dev, enum sensor_channel ch
 static void trigger_handler(struct k_work *work)
 {
   LOG_INF("Trigger handler");
-
-  static int64_t last_rpt_time = 0;
-  int64_t now = k_uptime_get();
-  LOG_INF("now = %lld", now);
-  LOG_INF("last_rpt_time = %lld", last_rpt_time);
-
-  // Check if enough time has passed since the last report
-  if (now - last_rpt_time < 20) {
-      // Not enough time has passed, exit without reading sensor
-      // (which would clear the buffers)
-      return 0;
-  }
-
-  // Update last report time
-  last_rpt_time = now;
 
   // sensor_trigger_handler_t handler;
   int err = 0;
@@ -862,6 +860,7 @@ static void pmw3360_async_init(struct k_work *work)
       //   .chan = SENSOR_CHAN_ALL,
       // };
       set_interrupt(dev, true);
+      data->last_rpt_time = k_uptime_get();
     } else {
       k_work_schedule(&data->init_work,
           K_MSEC(async_init_delay[
