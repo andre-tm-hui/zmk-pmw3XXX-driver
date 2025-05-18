@@ -1009,7 +1009,7 @@ static int set_interrupt(const struct device *dev,
     en ? GPIO_INT_LEVEL_ACTIVE : GPIO_INT_DISABLE);
 
   if (!err) {
-    data->data_ready_handler = handler;
+    LOG_ERR("can't set interrupt");
   }
 
   k_spin_unlock(&data->lock, key);
