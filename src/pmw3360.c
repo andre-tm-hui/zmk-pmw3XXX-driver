@@ -490,7 +490,7 @@ static int pmw3360_async_init_fw_load_verify(const struct device *dev) {
         return err;
     }
 
-    LOG_DBG("Optical chip firmware ID: 0x%x", fw_id);
+    LOG_INF("Optical chip firmware ID: 0x%x", fw_id);
     if (fw_id != PMW3360_FIRMWARE_ID) {
         LOG_ERR("Chip is not running from SROM!");
         return -EIO;
@@ -595,7 +595,7 @@ static int pmw3360_report_data(const struct device *dev) {
     int16_t x = sys_get_le16(&buf[PMW3360_DX_POS]);
 	int16_t y = sys_get_le16(&buf[PMW3360_DY_POS]);
 
-    LOG_DBG("dx=%d, dy=%d", x, y);
+    LOG_INF("dx=%d, dy=%d", x, y);
 
 #if IS_ENABLED(CONFIG_PMW3360_SWAP_XY)
     int16_t a = x;
@@ -822,7 +822,7 @@ static int pmw3360_attr_set(const struct device *dev, enum sensor_channel chan,
     }
 
     if (unlikely(!data->ready)) {
-        LOG_DBG("Device is not initialized yet");
+        LOG_INF("Device is not initialized yet");
         return -EBUSY;
     }
 

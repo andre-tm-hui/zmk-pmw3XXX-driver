@@ -448,7 +448,7 @@ static int update_cpi(const struct device *dev)
   /* Convert CPI to register value */
   uint8_t value = (cpi / 100) - 1;
 
-  LOG_DBG("Setting CPI to %u (reg value 0x%x)", cpi, value);
+  LOG_INF("Setting CPI to %u (reg value 0x%x)", cpi, value);
 
   int err = reg_write(dev, PMW3360_REG_CONFIG1, value);
   if (err) {
@@ -511,7 +511,7 @@ static int update_downshift_time(const struct device *dev, uint8_t reg_addr,
   /* Convert time to register value */
   uint8_t value = time / mintime;
 
-  LOG_DBG("Set downshift time to %u ms (reg value 0x%x)", time, value);
+  LOG_INF("Set downshift time to %u ms (reg value 0x%x)", time, value);
 
   int err = reg_write(dev, reg_addr, value);
   if (err) {
@@ -537,7 +537,7 @@ static int update_sample_time(const struct device *dev,
     return -EINVAL;
   }
 
-  LOG_DBG("Set sample time to %u ms", sample_time);
+  LOG_INF("Set sample time to %u ms", sample_time);
 
   /* The sample time is (reg_value + 1) ms. */
   sample_time--;
@@ -569,7 +569,7 @@ static int toggle_rest_modes(const struct device *dev, uint8_t reg_addr,
 
   WRITE_BIT(value, PMW3360_REST_EN_POS, enable);
 
-  LOG_DBG("%sable rest modes", (enable) ? ("En") : ("Dis"));
+  LOG_INF("%sable rest modes", (enable) ? ("En") : ("Dis"));
   err = reg_write(dev, reg_addr, value);
 
   if (err) {
@@ -651,7 +651,7 @@ static int pmw3360_async_init_fw_load_verify(const struct device *dev)
     return err;
   }
 
-  LOG_DBG("Optical chip firmware ID: 0x%x", fw_id);
+  LOG_INF("Optical chip firmware ID: 0x%x", fw_id);
   if (fw_id != PMW3360_FIRMWARE_ID) {
     LOG_ERR("Chip is not running from SROM!");
     return -EIO;
@@ -777,7 +777,7 @@ static void pmw3360_async_init(struct k_work *work)
             init_work.work);
   const struct device *dev = data->dev;
 
-  LOG_DBG("PMW3360 async init step %d", data->async_init_step);
+  LOG_INF("PMW3360 async init step %d", data->async_init_step);
 
   data->err = async_init_fn[data->async_init_step](dev);
   if (data->err) {
@@ -864,7 +864,7 @@ static int pmw3360_init(const struct device *dev)
 
 static int pmw3360_sample_fetch(const struct device *dev, enum sensor_channel chan)
 {
-  LOG_DBG("Sample fetch");
+  LOG_INF("Sample fetch");
   struct pmw3360_data *data = dev->data;
   const struct pmw3360_config *config = dev->config;
   uint8_t buf[PMW3360_BURST_SIZE];
@@ -874,7 +874,7 @@ static int pmw3360_sample_fetch(const struct device *dev, enum sensor_channel ch
   }
 
   if (unlikely(!data->ready)) {
-    LOG_DBG("Device is not initialized yet");
+    LOG_INF("Device is not initialized yet");
     return -EBUSY;
   }
 
@@ -911,7 +911,7 @@ static int pmw3360_channel_get(const struct device *dev, enum sensor_channel cha
   struct pmw3360_data *data = dev->data;
 
   if (unlikely(!data->ready)) {
-    LOG_DBG("Device is not initialized yet");
+    LOG_INF("Device is not initialized yet");
     return -EBUSY;
   }
 
@@ -950,7 +950,7 @@ static int pmw3360_trigger_set(const struct device *dev,
   }
 
   if (unlikely(!data->ready)) {
-    LOG_DBG("Device is not initialized yet");
+    LOG_INF("Device is not initialized yet");
     return -EBUSY;
   }
 
@@ -985,7 +985,7 @@ static int pmw3360_attr_set(const struct device *dev, enum sensor_channel chan,
   }
 
   if (unlikely(!data->ready)) {
-    LOG_DBG("Device is not initialized yet");
+    LOG_INF("Device is not initialized yet");
     return -EBUSY;
   }
 
