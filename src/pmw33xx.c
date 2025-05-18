@@ -437,7 +437,8 @@ static int update_cpi(const struct device *dev)
   * 0x77: 12000 cpi (maximum cpi)
   */
 
-  uint32_t cpi = dev->config->cpi;
+  const struct pmw3360_config *config = dev->config;
+  uint32_t cpi = config->cpi;
 
   if ((cpi > PMW3360_MAX_CPI) || (cpi < PMW3360_MIN_CPI)) {
     LOG_ERR("CPI value %u out of range", cpi);
