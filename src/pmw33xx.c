@@ -862,6 +862,7 @@ static int pmw3360_init(const struct device *dev)
 static int pmw3360_sample_fetch(const struct device *dev, enum sensor_channel chan)
 {
   struct pmw3360_data *data = dev->data;
+  const struct pmw3360_config *config = dev->config;
   uint8_t buf[PMW3360_BURST_SIZE];
 
   if (unlikely(chan != SENSOR_CHAN_ALL)) {
