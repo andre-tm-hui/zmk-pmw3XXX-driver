@@ -750,7 +750,7 @@ static int pmw3360_sample_fetch(const struct device *dev, enum sensor_channel ch
 static void trigger_handler(struct k_work *work)
 {
   LOG_INF("Trigger handler");
-  sensor_trigger_handler_t handler;
+  // sensor_trigger_handler_t handler;
   int err = 0;
   struct pmw3360_data *data = CONTAINER_OF(work, struct pmw3360_data,
             trigger_handler_work);
@@ -759,26 +759,26 @@ static void trigger_handler(struct k_work *work)
 
   k_spinlock_key_t key = k_spin_lock(&data->lock);
 
-  handler = data->data_ready_handler;
+  // handler = data->data_ready_handler;
   k_spin_unlock(&data->lock, key);
 
-  if (!handler) {
-    return;
-  }
+  // if (!handler) {
+  //   return;
+  // }
 
-  struct sensor_trigger trig = {
-    .type = SENSOR_TRIG_DATA_READY,
-    .chan = SENSOR_CHAN_ALL,
-  };
+  // struct sensor_trigger trig = {
+  //   .type = SENSOR_TRIG_DATA_READY,
+  //   .chan = SENSOR_CHAN_ALL,
+  // };
 
-  handler(dev, &trig);
-  LOG_INF("data ready handler = %p", handler);
+  // handler(dev, &trig);
+  // LOG_INF("data ready handler = %p", handler);
   key = k_spin_lock(&data->lock);
-  if (data->data_ready_handler) {
+  // if (data->data_ready_handler) {
     pmw3360_sample_fetch(dev, SENSOR_CHAN_ALL);
     err = gpio_pin_interrupt_configure_dt(&config->irq_gpio,
                   GPIO_INT_LEVEL_ACTIVE);
-  }
+  // }
   k_spin_unlock(&data->lock, key);
 
   if (unlikely(err)) {
@@ -838,11 +838,11 @@ static void pmw3360_async_init(struct k_work *work)
     if (data->async_init_step == ASYNC_INIT_STEP_COUNT) {
       data->ready = true;
       LOG_INF("PMW3360 initialized");
-      sensor_trigger_handler_t *handler = data->data_ready_handler;
-      struct sensor_trigger trig = {
-        .type = SENSOR_TRIG_DATA_READY,
-        .chan = SENSOR_CHAN_ALL,
-      };
+      // sensor_trigger_handler_t *handler = data->data_ready_handler;
+      // struct sensor_trigger trig = {
+      //   .type = SENSOR_TRIG_DATA_READY,
+      //   .chan = SENSOR_CHAN_ALL,
+      // };
       set_interrupt(dev, true);
     } else {
       k_work_schedule(&data->init_work,
@@ -1008,7 +1008,7 @@ static int set_interrupt(const struct device *dev,
   err = gpio_pin_interrupt_configure_dt(&config->irq_gpio,
     en ? GPIO_INT_LEVEL_ACTIVE : GPIO_INT_DISABLE);
 
-  if (!err) {
+  if (err < 0) {
     LOG_ERR("can't set interrupt");
   }
 
